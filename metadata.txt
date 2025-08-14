@@ -1,0 +1,55 @@
+[general]
+name=XYZ/MGRS Coordinate Tool
+qgisMinimumVersion=3.0
+description=Interactive coordinate capture tool for XYZ tile coordinates and MGRS grid references with navigation and visualization capabilities
+version=0.1
+author=MAS Geospatial Solutions
+email=contact@masgeospatial.com
+about=Professional coordinate capture tool that allows users to click on the map to extract XYZ tile coordinates and MGRS grid references. Features include: dual coordinate system support (XYZ tiles and MGRS), interactive map clicking with crosshair cursor, coordinate display in dockable widget, XYZ tile navigation and polygon plotting, zoom level control for XYZ tiles, seamless integration with MAS Raster Processing toolbar, and professional QGIS toolbar behavior. Perfect for tile-based mapping applications, coordinate reference workflows, and geospatial data validation.
+    Follow The Steps below; 
+    1. Open your all bands in QGIS Interface or click on 'Open Bands' button and open all band images which images are you wants to stack. 
+    2. Click on "XYZ Coordinate Tool" tool
+    or 'Raster' menu --> 'MAS Raster Processing' menu item --> 'XYZ Coordinate Tool'. 
+    3. Re-arrange your bands using Move Up/Down button. 
+    4. If you wants to open the output file after stacking, check mark on it. 
+    5. Click on "XYZ Coordinate Tool" Button.
+    * Please give a vote (stars) according to your experiences, it will motivate me. If you required any other tools or plugins please contact with me "mastools.help@gmail.com".
+    ** MAS refer to my name "Mirjan Ali Sha".
+
+tracker=https://github.com/masgeospatial/xyz-coordinate-tool/issues
+repository=https://github.com/masgeospatial/xyz-coordinate-tool
+tags=coordinates,xyz,tiles,mgrs,navigation,raster,geospatial,mapping
+homepage=https://github.com/masgeospatial/xyz-coordinate-tool
+category=Raster
+icon=icon.png
+experimental=False
+deprecated=False
+
+# Plugin dependencies
+hasProcessingProvider=no
+hasWebMapServices=no
+
+# Changelog
+changelog=
+    Version 0.1 (2025-08-15)
+    - Initial release
+    - XYZ tile coordinate capture from map clicks
+    - MGRS grid reference capture from map clicks
+    - Dual coordinate system support with dropdown selection
+    - Interactive crosshair cursor for precise coordinate capture
+    - XYZ tile navigation ("Go To" functionality)
+    - XYZ tile polygon plotting with red outline visualization
+    - Zoom level control for XYZ tiles (0-22 range)
+    - Professional dockable widget interface
+    - Integration with MAS Raster Processing menu and toolbar
+    - Smart toolbar behavior with proper tool state management
+    - Dock widget persistence when switching tools
+    - Status bar feedback and message notifications
+    - Error handling with user-friendly messages
+    - Memory layer creation with proper attribute tables
+    - Coordinate reprojection support for different CRS
+    - Professional tooltips and help documentation
+
+# Server configuration
+server=False
+</metadata>
