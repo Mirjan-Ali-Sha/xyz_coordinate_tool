@@ -250,6 +250,103 @@ def latlon_to_mgrs(lat, lon, precision=0):
         return None
 
 
+# def mgrs_to_latlon(mgrs_string):
+#     """Convert MGRS coordinate string to latitude/longitude - COMPLETELY FIXED."""
+#     try:
+#         mgrs = mgrs_string.strip().upper()
+#         print(f"Converting MGRS: {mgrs}")
+        
+#         # Parse MGRS string
+#         if len(mgrs) < 5:
+#             print(f"MGRS string too short: {mgrs}")
+#             return None
+            
+#         # Extract zone number (first 2 digits)
+#         zone = int(mgrs[:2])
+        
+#         # Extract grid zone designator (3rd character)
+#         grid_designator = mgrs[2]
+        
+#         # Extract 100km square identifier (4th and 5th characters)
+#         square_id = mgrs[3:5]
+        
+#         print(f"Zone: {zone}, Grid: {grid_designator}, Square: {square_id}")
+        
+#         # Extract coordinates (everything after position 5)
+#         coord_part = mgrs[5:]
+        
+#         # For 100km square only (no numerical coordinates)
+#         if len(coord_part) == 0:
+#             # Return center of 100km square
+#             grid_x = 50000  # Center of square
+#             grid_y = 50000
+#         else:
+#             if len(coord_part) % 2 != 0:
+#                 return None
+            
+#             precision = len(coord_part) // 2
+#             x_str = coord_part[:precision]
+#             y_str = coord_part[precision:]
+            
+#             # Scale coordinates
+#             scale = 10 ** (5 - precision)
+#             grid_x = int(x_str) * scale
+#             grid_y = int(y_str) * scale
+        
+#         # Get hemisphere from grid designator
+#         hemisphere = 'N' if grid_designator >= 'N' else 'S'
+        
+#         # Calculate base UTM coordinates for the 100km square
+#         col_letters_sets = [
+#             'ABCDEFGH',    # Zones 1, 4, 7, 10, etc.
+#             'JKLMNPQR',    # Zones 2, 5, 8, 11, etc.
+#             'STUVWXYZ'     # Zones 3, 6, 9, 12, etc.
+#         ]
+        
+#         col_set_index = (zone - 1) % 3
+#         col_letters = col_letters_sets[col_set_index]
+        
+#         try:
+#             col_index = col_letters.index(square_id[0])
+#         except ValueError:
+#             print(f"Invalid column letter: {square_id[0]}")
+#             return None
+        
+#         # Calculate base X coordinate
+#         base_x = 500000 + (col_index - 4) * 100000  # 500000 is false easting, adjust for central column
+        
+#         # Row calculation
+#         if zone % 2 == 1:
+#             row_letters = 'ABCDEFGHJKLMNPQRSTUV'
+#         else:
+#             row_letters = 'FGHJKLMNPQRSTUVABCDE'
+        
+#         try:
+#             row_index = row_letters.index(square_id[1])
+#         except ValueError:
+#             print(f"Invalid row letter: {square_id[1]}")
+#             return None
+        
+#         # Calculate base Y coordinate
+#         base_y = row_index * 100000
+        
+#         # Final UTM coordinates
+#         utm_x = base_x + grid_x
+#         utm_y = base_y + grid_y
+        
+#         print(f"UTM: Zone {zone}{hemisphere}, X: {utm_x}, Y: {utm_y}")
+        
+#         # Convert UTM to lat/lon
+#         lat, lon = utm_to_latlon(zone, hemisphere, utm_x, utm_y)
+        
+#         print(f"Result: Lat {lat:.6f}, Lon {lon:.6f}")
+#         return lat, lon
+        
+#     except Exception as e:
+#         print(f"Error converting from MGRS: {e}")
+#         import traceback
+#         traceback.print_exc()
+#         return None
 def mgrs_to_latlon(mgrs_string):
     """Convert MGRS coordinate string to latitude/longitude - COMPLETELY FIXED."""
     try:
@@ -313,12 +410,12 @@ def mgrs_to_latlon(mgrs_string):
             return None
         
         # Calculate base X coordinate
-        base_x = 500000 + (col_index - 4) * 100000  # 500000 is false easting, adjust for central column
+        base_x = 500000 + (col_index - 4) * 100000  # 500000 is false easting
         
-        # Row calculation
-        if zone % 2 == 1:
+        # Row calculation with 2,000,000m cycle handling
+        if zone % 2 == 1:  # Odd zones
             row_letters = 'ABCDEFGHJKLMNPQRSTUV'
-        else:
+        else:  # Even zones
             row_letters = 'FGHJKLMNPQRSTUVABCDE'
         
         try:
@@ -327,20 +424,68 @@ def mgrs_to_latlon(mgrs_string):
             print(f"Invalid row letter: {square_id[1]}")
             return None
         
-        # Calculate base Y coordinate
-        base_y = row_index * 100000
+        # Calculate base Y within 0-2,000,000m cycle
+        base_y_in_cycle = row_index * 100000
         
-        # Final UTM coordinates
-        utm_x = base_x + grid_x
-        utm_y = base_y + grid_y
+        # Get expected latitude range for this band
+        lat_band_ranges = {
+            'C': (-80, -72), 'D': (-72, -64), 'E': (-64, -56), 'F': (-56, -48),
+            'G': (-48, -40), 'H': (-40, -32), 'J': (-32, -24), 'K': (-24, -16),
+            'L': (-16, -8), 'M': (-8, 0),
+            'N': (0, 8), 'P': (8, 16), 'Q': (16, 24), 'R': (24, 32),
+            'S': (32, 40), 'T': (40, 48), 'U': (48, 56), 'V': (56, 64),
+            'W': (64, 72), 'X': (72, 84)
+        }
         
-        print(f"UTM: Zone {zone}{hemisphere}, X: {utm_x}, Y: {utm_y}")
+        expected_lat_range = lat_band_ranges.get(grid_designator)
+        if expected_lat_range is None:
+            print(f"Invalid grid designator: {grid_designator}")
+            return None
         
-        # Convert UTM to lat/lon
-        lat, lon = utm_to_latlon(zone, hemisphere, utm_x, utm_y)
+        # Try different 2,000,000m cycles to find the correct one
+        # that produces a latitude within the expected band
+        best_result = None
+        best_lat_error = float('inf')
         
-        print(f"Result: Lat {lat:.6f}, Lon {lon:.6f}")
-        return lat, lon
+        for cycle in range(0, 10):  # Try up to 10 cycles (0-20,000,000m)
+            test_base_y = base_y_in_cycle + (cycle * 2000000)
+            
+            # For southern hemisphere, adjust
+            if hemisphere == 'S':
+                test_base_y = 10000000 - test_base_y
+            
+            # Final UTM coordinates
+            utm_x = base_x + grid_x
+            utm_y = test_base_y + grid_y
+            
+            # Convert to lat/lon
+            try:
+                lat, lon = utm_to_latlon(zone, hemisphere, utm_x, utm_y)
+                
+                # Check if latitude is in expected range
+                lat_min, lat_max = expected_lat_range
+                if lat_min <= lat <= lat_max:
+                    print(f"Found match: Cycle {cycle}, UTM Y: {utm_y}, Lat: {lat:.6f}, Lon: {lon:.6f}")
+                    return lat, lon
+                
+                # Track closest match in case exact match not found
+                lat_center = (lat_min + lat_max) / 2
+                lat_error = abs(lat - lat_center)
+                if lat_error < best_lat_error:
+                    best_lat_error = lat_error
+                    best_result = (lat, lon, utm_y, cycle)
+                    
+            except Exception as e:
+                continue
+        
+        # If no exact match, use the closest one
+        if best_result:
+            lat, lon, utm_y, cycle = best_result
+            print(f"Using closest match: Cycle {cycle}, UTM Y: {utm_y}, Lat: {lat:.6f}, Lon: {lon:.6f}")
+            return lat, lon
+        
+        print(f"Failed to find valid conversion for {mgrs_string}")
+        return None
         
     except Exception as e:
         print(f"Error converting from MGRS: {e}")

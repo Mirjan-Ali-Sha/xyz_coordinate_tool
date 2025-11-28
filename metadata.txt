@@ -1,43 +1,95 @@
 [general]
 name=XYZ/MGRS Coordinate Tool
 qgisMinimumVersion=3.0
-description=Interactive coordinate capture tool for XYZ tile coordinates and MGRS grid references with navigation and visualization capabilities
-version=0.1
-author=MAS Geospatial Solutions
-email=contact@masgeospatial.com
-about=Professional coordinate capture tool that allows users to click on the map to extract XYZ tile coordinates and MGRS grid references. Features include: dual coordinate system support (XYZ tiles and MGRS), interactive map clicking with crosshair cursor, coordinate display in dockable widget, XYZ tile navigation and polygon plotting, zoom level control for XYZ tiles, seamless integration with MAS Raster Processing toolbar, and professional QGIS toolbar behavior. Perfect for tile-based mapping applications, coordinate reference workflows, and geospatial data validation.
-    Follow The Steps below; 
-    1. Open your all bands in QGIS Interface or click on 'Open Bands' button and open all band images which images are you wants to stack. 
-    2. Click on "XYZ Coordinate Tool" tool
-    or 'Raster' menu --> 'MAS Raster Processing' menu item --> 'XYZ Coordinate Tool'. 
-    3. Re-arrange your bands using Move Up/Down button. 
-    4. If you wants to open the output file after stacking, check mark on it. 
-    5. Click on "XYZ Coordinate Tool" Button.
-    * Please give a vote (stars) according to your experiences, it will motivate me. If you required any other tools or plugins please contact with me "mastools.help@gmail.com".
-    ** MAS refer to my name "Mirjan Ali Sha".
+description=Advanced multi-format coordinate tool supporting XYZ tiles, MGRS, WKT, WKB, and GeoJSON with interactive navigation and visualization
+version=1.0.0
+author=Mirjan Ali Sha
+email=mastools.help@gmail.com
 
-tracker=https://github.com/masgeospatial/xyz-coordinate-tool/issues
-repository=https://github.com/masgeospatial/xyz-coordinate-tool
-tags=coordinates,xyz,tiles,mgrs,navigation,raster,geospatial,mapping
-homepage=https://github.com/masgeospatial/xyz-coordinate-tool
+about=Professional multi-format coordinate capture and visualization tool for QGIS. Supports 5 coordinate systems with full navigation and plotting capabilities.
+    .
+    SUPPORTED FORMATS:
+    - XYZ Tiles: Web mapping tile coordinates with zoom levels (Red visualization)
+    - MGRS: Military Grid Reference System, Sentinel-2 compatible (Blue visualization)
+    - WKT: Well-Known Text geometry format (Green visualization)
+    - WKB: Well-Known Binary geometry as hex string (Yellow visualization)
+    - GeoJSON: JSON-based geometry format (Purple visualization)
+    .
+    KEY FEATURES:
+    - Interactive map clicking with crosshair cursor for coordinate capture
+    - Dual-mode operation: Click-to-capture OR manual input for all formats
+    - Go To button: Navigate/zoom to any coordinate system location
+    - Plot Polygon/Geometry button: Visualize geometries with color-coded layers
+    - Editable coordinate inputs (X, Y, Z for tiles; text input for others)
+    - Smart geometry type detection (Point, LineString, Polygon, Multi types)
+    - Dockable widget interface with system dropdown selector
+    - Seamless integration with MAS Raster Processing toolbar
+    - Coordinate reprojection support for different CRS
+    - Memory layer creation with proper attribute tables and symbology
+    .
+    QUICK START GUIDE:
+    1. Activate tool: Click XYZ Coordinate Tool icon or Raster menu - MAS Raster Processing - XYZ Coordinate Tool
+    2. Select coordinate system from dropdown (XYZ Tiles, MGRS, WKT, WKB, or GeoJSON/JSON)
+    3. FOR XYZ/MGRS: Click on map to capture coordinates. FOR WKT/WKB/GEOJSON: Paste or type geometry string in the input field
+    4. Click Go To to navigate to the location
+    5. Click Plot Polygon to visualize the geometry on map
+    6. Edit coordinates manually if needed (all inputs are editable)
+    .
+    USE CASES:
+    - Tile-based web mapping applications (XYZ tiles)
+    - Sentinel-2 satellite imagery tile identification (MGRS)
+    - Geometry data exchange and validation (WKT, WKB, GeoJSON)
+    - Coordinate reference system testing and debugging
+    - Geospatial data quality assurance workflows
+    - Educational tool for understanding different coordinate formats
+    .
+    TECHNICAL NOTES:
+    - XYZ tiles: Z value (zoom level) range 0-22, default 14
+    - MGRS: Fixed latitude band calculation with 2,000,000m cycle handling
+    - WKT/WKB/GeoJSON: Automatic geometry type detection and appropriate symbology
+    - All geometries are created in EPSG:4326 (WGS84) coordinate system
+    - Color-coded layers for easy identification of coordinate system source
+    .
+    Please rate this plugin based on your experience - your feedback motivates continued development!
+    For support, feature requests, or custom QGIS tools: mastools.help@gmail.com
+    MAS = Mirjan Ali Sha (plugin author)
+
+tracker=https://github.com/Mirjan-Ali-Sha/xyz-coordinate-tool/issues
+repository=https://github.com/Mirjan-Ali-Sha/xyz-coordinate-tool
+tags=coordinates,xyz,tiles,mgrs,wkt,wkb,geojson,navigation,raster,geospatial,mapping,sentinel,geometry,conversion,visualization
+homepage=https://github.com/Mirjan-Ali-Sha/xyz-coordinate-tool
 category=Raster
 icon=icon.png
 experimental=False
 deprecated=False
 
-# Plugin dependencies
 hasProcessingProvider=no
 hasWebMapServices=no
 
-# Changelog
-changelog=
+changelog=Version 1.0.0 (2025-11-29)
+    - MAJOR UPDATE: Added support for 3 new coordinate formats (WKT, WKB, GeoJSON/JSON)
+    - Added MGRS Go To and Plot Polygon functionality (Sentinel-2 compatible)
+    - Fixed critical MGRS coordinate conversion bug (latitude band cycle calculation)
+    - Made X and Y inputs editable for manual coordinate entry
+    - Implemented smart geometry type detection for all formats
+    - Added proper symbology for Point, LineString, Polygon, and Multi geometries
+    - Color-coded visualization: Red (XYZ), Blue (MGRS), Green (WKT), Yellow (WKB), Purple (GeoJSON)
+    - Enhanced GeoJSON parser supporting all geometry types including Multi
+    - Improved error handling with detailed user feedback messages
+    - Updated tooltips to reflect new multi-format capabilities
+    - Added geometry type display in layer attributes
+    - Fixed WKB hex string parsing and conversion
+    - Optimized memory layer creation for different geometry types
+    - Enhanced Go To function with automatic extent buffering (10 percent)
+    - Updated dock widget to support 5 coordinate systems with dynamic input fields
+    .
     Version 0.1 (2025-08-15)
     - Initial release
     - XYZ tile coordinate capture from map clicks
     - MGRS grid reference capture from map clicks
     - Dual coordinate system support with dropdown selection
     - Interactive crosshair cursor for precise coordinate capture
-    - XYZ tile navigation ("Go To" functionality)
+    - XYZ tile navigation (Go To functionality)
     - XYZ tile polygon plotting with red outline visualization
     - Zoom level control for XYZ tiles (0-22 range)
     - Professional dockable widget interface
@@ -50,6 +102,4 @@ changelog=
     - Coordinate reprojection support for different CRS
     - Professional tooltips and help documentation
 
-# Server configuration
 server=False
-</metadata>

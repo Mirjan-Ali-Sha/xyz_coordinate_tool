@@ -29,10 +29,11 @@ class XYZCoordinateDialog(QDockWidget):
         system_layout = QHBoxLayout()
         system_layout.addWidget(QLabel("System:"))
         self.system_combo = QComboBox()
-        self.system_combo.addItems(["XYZ Tiles", "MGRS"])
+        self.system_combo.addItems(["XYZ Tiles", "MGRS", "WKT", "WKB", "GeoJSON/JSON"])
         self.system_combo.currentTextChanged.connect(self.on_system_changed)
         system_layout.addWidget(self.system_combo)
         layout.addLayout(system_layout)
+
         
         # Container for coordinate inputs
         self.input_container = QWidget()
@@ -82,7 +83,7 @@ class XYZCoordinateDialog(QDockWidget):
         self.x_input = QSpinBox()
         self.x_input.setRange(0, 999999999)
         self.x_input.setValue(0)
-        self.x_input.setReadOnly(True)  # Make read-only since it's captured from clicks
+        # self.x_input.setReadOnly(True)  # Make read-only since it's captured from clicks
         x_layout.addWidget(self.x_input)
         self.input_layout.addLayout(x_layout)
         
@@ -92,7 +93,7 @@ class XYZCoordinateDialog(QDockWidget):
         self.y_input = QSpinBox()
         self.y_input.setRange(0, 999999999)
         self.y_input.setValue(0)
-        self.y_input.setReadOnly(True)  # Make read-only since it's captured from clicks
+        # self.y_input.setReadOnly(True)  # Make read-only since it's captured from clicks
         y_layout.addWidget(self.y_input)
         self.input_layout.addLayout(y_layout)
         
@@ -116,9 +117,49 @@ class XYZCoordinateDialog(QDockWidget):
         self.mgrs_input = QLineEdit()
         self.mgrs_input.setPlaceholderText("e.g., 44PLV, 43PES, 44PKC")
         self.mgrs_input.setToolTip("MGRS grid reference captured from map clicks")
-        self.mgrs_input.setReadOnly(True)  # Make read-only since it's captured from clicks
+        # self.mgrs_input.setReadOnly(True)  # Make read-only since it's captured from clicks
         mgrs_layout.addWidget(self.mgrs_input)
         self.input_layout.addLayout(mgrs_layout)
+
+    def setup_wkt_inputs(self):
+        """Setup WKT coordinate input field."""
+        self.clear_inputs()
+        
+        # WKT coordinate input
+        wkt_layout = QVBoxLayout()
+        wkt_layout.addWidget(QLabel("WKT:"))
+        self.wkt_input = QLineEdit()
+        self.wkt_input.setPlaceholderText("e.g., POINT(88.5 22.5) or POLYGON(...)")
+        self.wkt_input.setToolTip("Well-Known Text geometry representation")
+        wkt_layout.addWidget(self.wkt_input)
+        self.input_layout.addLayout(wkt_layout)
+
+    def setup_wkb_inputs(self):
+        """Setup WKB coordinate input field."""
+        self.clear_inputs()
+        
+        # WKB coordinate input
+        wkb_layout = QVBoxLayout()
+        wkb_layout.addWidget(QLabel("WKB (Hex):"))
+        self.wkb_input = QLineEdit()
+        self.wkb_input.setPlaceholderText("e.g., 0101000000...")
+        self.wkb_input.setToolTip("Well-Known Binary geometry as hex string")
+        wkb_layout.addWidget(self.wkb_input)
+        self.input_layout.addLayout(wkb_layout)
+
+    def setup_geojson_inputs(self):
+        """Setup GeoJSON coordinate input field."""
+        self.clear_inputs()
+        
+        # GeoJSON coordinate input
+        geojson_layout = QVBoxLayout()
+        geojson_layout.addWidget(QLabel("GeoJSON:"))
+        self.geojson_input = QLineEdit()
+        self.geojson_input.setPlaceholderText('e.g., {"type":"Point","coordinates":[88.5,22.5]}')
+        self.geojson_input.setToolTip("GeoJSON geometry representation")
+        geojson_layout.addWidget(self.geojson_input)
+        self.input_layout.addLayout(geojson_layout)
+
 
     def clear_inputs(self):
         """Clear all input widgets from the container."""
@@ -142,14 +183,29 @@ class XYZCoordinateDialog(QDockWidget):
         """Update button visibility based on coordinate system."""
         current_system = self.get_current_system()
         
+        # Show buttons for ALL systems
+        self.button_container.show()
+        
         if current_system == "XYZ Tiles":
-            # Show buttons for XYZ
-            self.button_container.show()
             self.info_label.setText("Click on the map to capture XYZ coordinates")
+            self.go_to_button.setToolTip("Navigate to the XYZ tile location")
+            self.plot_polygon_button.setToolTip("Draw polygon representing the XYZ tile area")
         elif current_system == "MGRS":
-            # Hide buttons for MGRS
-            self.button_container.hide()
             self.info_label.setText("Click on the map to capture MGRS coordinates")
+            self.go_to_button.setToolTip("Navigate to the MGRS tile location (Sentinel-2 compatible)")
+            self.plot_polygon_button.setToolTip("Draw polygon representing the MGRS 100km tile area")
+        elif current_system == "WKT":
+            self.info_label.setText("Enter or paste WKT geometry")
+            self.go_to_button.setToolTip("Navigate to the WKT geometry extent")
+            self.plot_polygon_button.setToolTip("Plot the WKT geometry on map")
+        elif current_system == "WKB":
+            self.info_label.setText("Enter or paste WKB hex string")
+            self.go_to_button.setToolTip("Navigate to the WKB geometry extent")
+            self.plot_polygon_button.setToolTip("Plot the WKB geometry on map")
+        elif current_system == "GeoJSON/JSON":
+            self.info_label.setText("Enter or paste GeoJSON geometry")
+            self.go_to_button.setToolTip("Navigate to the GeoJSON geometry extent")
+            self.plot_polygon_button.setToolTip("Plot the GeoJSON geometry on map")
 
     def on_system_changed(self, system_name):
         """Handle coordinate system change."""
@@ -157,6 +213,12 @@ class XYZCoordinateDialog(QDockWidget):
             self.setup_xyz_inputs()
         elif system_name == "MGRS":
             self.setup_mgrs_inputs()
+        elif system_name == "WKT":
+            self.setup_wkt_inputs()
+        elif system_name == "WKB":
+            self.setup_wkb_inputs()
+        elif system_name == "GeoJSON/JSON":
+            self.setup_geojson_inputs()
         
         # Update button visibility
         self.update_button_visibility()
@@ -177,11 +239,22 @@ class XYZCoordinateDialog(QDockWidget):
             if hasattr(self, 'x_input'):
                 self.x_input.setValue(int(x))
                 self.y_input.setValue(int(y))
-                # Don't override Z value - let user keep their preference
         elif current_system == "MGRS" and len(args) >= 1:
             mgrs_ref = args[0]
             if hasattr(self, 'mgrs_input'):
                 self.mgrs_input.setText(str(mgrs_ref))
+        elif current_system == "WKT" and len(args) >= 1:
+            wkt_str = args[0]
+            if hasattr(self, 'wkt_input'):
+                self.wkt_input.setText(str(wkt_str))
+        elif current_system == "WKB" and len(args) >= 1:
+            wkb_str = args[0]
+            if hasattr(self, 'wkb_input'):
+                self.wkb_input.setText(str(wkb_str))
+        elif current_system == "GeoJSON/JSON" and len(args) >= 1:
+            geojson_str = args[0]
+            if hasattr(self, 'geojson_input'):
+                self.geojson_input.setText(str(geojson_str))
 
     def get_coordinates(self):
         """Get the current coordinate values based on system."""
@@ -195,23 +268,80 @@ class XYZCoordinateDialog(QDockWidget):
             if hasattr(self, 'mgrs_input'):
                 return (self.mgrs_input.text().strip(),)
             return ("",)
+        elif current_system == "WKT":
+            if hasattr(self, 'wkt_input'):
+                return (self.wkt_input.text().strip(),)
+            return ("",)
+        elif current_system == "WKB":
+            if hasattr(self, 'wkb_input'):
+                return (self.wkb_input.text().strip(),)
+            return ("",)
+        elif current_system == "GeoJSON/JSON":
+            if hasattr(self, 'geojson_input'):
+                return (self.geojson_input.text().strip(),)
+            return ("",)
+
 
     def on_go_to_clicked(self):
-        """Handle Go To button click - only for XYZ."""
+        """Handle Go To button click - for all systems."""
         current_system = self.get_current_system()
+        coords = self.get_coordinates()
         
         if current_system == "XYZ Tiles":
-            coords = self.get_coordinates()
             x, y, z = coords
             self.go_to_clicked.emit("XYZ", x, y, z)
-        # No action for MGRS since buttons are hidden
+        elif current_system == "MGRS":
+            mgrs_ref = coords[0]
+            if mgrs_ref:
+                self.go_to_clicked.emit("MGRS", mgrs_ref, None, None)
+        elif current_system == "WKT":
+            wkt_str = coords[0]
+            if wkt_str:
+                self.go_to_clicked.emit("WKT", wkt_str, None, None)
+        elif current_system == "WKB":
+            wkb_str = coords[0]
+            if wkb_str:
+                self.go_to_clicked.emit("WKB", wkb_str, None, None)
+        elif current_system == "GeoJSON/JSON":
+            geojson_str = coords[0]
+            if geojson_str:
+                self.go_to_clicked.emit("GeoJSON", geojson_str, None, None)
 
     def on_plot_polygon_clicked(self):
-        """Handle Plot Polygon button click - only for XYZ."""
+        """Handle Plot Polygon button click - for all systems."""
         current_system = self.get_current_system()
+        coords = self.get_coordinates()
         
         if current_system == "XYZ Tiles":
-            coords = self.get_coordinates()
             x, y, z = coords
             self.plot_polygon_clicked.emit("XYZ", x, y, z)
-        # No action for MGRS since buttons are hidden
+        elif current_system == "MGRS":
+            mgrs_ref = coords[0]
+            if mgrs_ref:
+                self.plot_polygon_clicked.emit("MGRS", mgrs_ref, None, None)
+        elif current_system == "WKT":
+            wkt_str = coords[0]
+            if wkt_str:
+                self.plot_polygon_clicked.emit("WKT", wkt_str, None, None)
+        elif current_system == "WKB":
+            wkb_str = coords[0]
+            if wkb_str:
+                self.plot_polygon_clicked.emit("WKB", wkb_str, None, None)
+        elif current_system == "GeoJSON/JSON":
+            geojson_str = coords[0]
+            if geojson_str:
+                self.plot_polygon_clicked.emit("GeoJSON", geojson_str, None, None)
+
+    # def on_plot_polygon_clicked(self):
+    #     """Handle Plot Polygon button click - for both XYZ and MGRS."""
+    #     current_system = self.get_current_system()
+        
+    #     if current_system == "XYZ Tiles":
+    #         coords = self.get_coordinates()
+    #         x, y, z = coords
+    #         self.plot_polygon_clicked.emit("XYZ", x, y, z)
+    #     elif current_system == "MGRS":
+    #         coords = self.get_coordinates()
+    #         mgrs_ref = coords[0]
+    #         if mgrs_ref:
+    #             self.plot_polygon_clicked.emit("MGRS", mgrs_ref, None, None)
