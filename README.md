@@ -2,7 +2,7 @@
 
 ![QGIS Plugin](https://img.shields.io/badge/QGIS-Plugin-green.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
+![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 
 A professional multi-format coordinate capture and visualization tool for QGIS that supports **5 different coordinate systems** with full navigation and plotting capabilities.
